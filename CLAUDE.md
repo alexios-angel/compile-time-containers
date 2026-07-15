@@ -1,9 +1,11 @@
 # ctc — compile-time containers
 
-Header-only C++20 library (namespace `ctc`): fixed-capacity constexpr
-`basic_string`/`vector`/`map`/`pair` that are STRUCTURAL types (usable as
-NTTPs, persistable to runtime static storage). This is the shared containers
-layer for the compile-time-* family and (eventually) notre. Repo:
+Header-only C++20 library (namespace `ctc`): EVERY C++20 standard container
+(array, vector, deque, forward_list, list, set/map/multi*, unordered_*,
+stack/queue/priority_queue) plus basic_string and pair, as fixed-capacity
+constexpr STRUCTURAL types (usable as NTTPs, persistable to runtime static
+storage). This is the shared containers layer for the compile-time-* family
+and (eventually) notre. Repo:
 github.com/alexios-angel/compile-time-containers — work on `main`. License:
 MIT (original code, unlike the Apache-2.0 CTRE-derived siblings).
 
@@ -24,9 +26,16 @@ Flags are fixed: `-std=c++20 -Iinclude -O2 -pedantic -Wall -Wextra -Werror
 
 ## Layout
 - `include/ctc.hpp` — umbrella; doc comment + `shrunk<V>()` live here.
-- `include/ctc/` — `utility.hpp` (`CTC_EXPORT`, the precondition trap),
-  `pair.hpp`, `string.hpp`, `vector.hpp`, `map.hpp`. Self-contained, zero
-  dependencies — vendorable as a unit like ctll/ctlark are.
+- `include/ctc/` — `utility.hpp` (`CTC_EXPORT`, the precondition trap,
+  `ctc::less`/`equal_to`, binary-search helpers), `pair.hpp`, `string.hpp`,
+  `array.hpp`, `vector.hpp`, `deque.hpp` (publicly derives from vector —
+  public bases stay structural), `forward_list.hpp`/`list.hpp`
+  (index-linked node pools), `set.hpp`/`map.hpp` (SORTED, transparent
+  stateless Compare, canonical layout), `unordered_set.hpp`/
+  `unordered_map.hpp` (insertion-ordered linear KeyEqual scans; Hash param
+  accepted and ignored; multi* keep equal keys adjacent), `stack.hpp`/
+  `queue.hpp` (adaptors; public member `c`; priority_queue = binary heap).
+  Self-contained, zero dependencies — vendorable as a unit like ctll/ctlark.
 - `tests/` — one static_assert suite per container (`int main() { }` at the
   bottom, family style). `examples/config.cpp`. `ctc.cppm` (C++23 module).
 
@@ -48,6 +57,13 @@ Flags are fixed: `-std=c++20 -Iinclude -O2 -pedantic -Wall -Wextra -Werror
   like std::map.
 - `shrunk<V>()` = `V.with_capacity<V.size()>()` — the oversize-then-shrink
   idiom every consumer of this library builds on.
+- **Canonicality tiers**: sorted set/map = canonical by CONTENT (equal ⇒
+  same NTTP); vector/deque/string/unordered_* = canonical by operation
+  sequence (slot resets make equal-content-same-history identical);
+  forward_list/list/priority_queue = history-dependent layout, only == is
+  content-based — `with_capacity`/`shrunk` rebuilds lists canonically.
+- Comparators/KeyEqual must be STATELESS (static_asserted): constructed on
+  use, never stored, never part of the NTTP.
 
 ## Conventions
 Tabs, K&R braces, `constexpr`/`noexcept` (mutators that can trap still say

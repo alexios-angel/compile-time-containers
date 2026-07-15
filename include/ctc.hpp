@@ -4,13 +4,24 @@
 #include "ctc/utility.hpp"
 #include "ctc/pair.hpp"
 #include "ctc/string.hpp"
+#include "ctc/array.hpp"
 #include "ctc/vector.hpp"
+#include "ctc/deque.hpp"
+#include "ctc/forward_list.hpp"
+#include "ctc/list.hpp"
+#include "ctc/set.hpp"
 #include "ctc/map.hpp"
+#include "ctc/unordered_set.hpp"
+#include "ctc/unordered_map.hpp"
+#include "ctc/stack.hpp"
+#include "ctc/queue.hpp"
 
-// ctc: compile-time containers. Fixed-capacity constexpr strings,
-// vectors and maps that stay STRUCTURAL types - values built at
-// compile time can be non-type template parameters and can persist to
-// runtime in static storage:
+// ctc: compile-time containers. Every C++20 standard container -
+// array, vector, deque, forward_list, list, set/map/multiset/multimap,
+// the four unordered_* containers, stack, queue, priority_queue - plus
+// string and pair, as fixed-capacity constexpr types that stay
+// STRUCTURAL - values built at compile time can be non-type template
+// parameters and can persist to runtime in static storage:
 //
 //   constexpr auto greeting = [] {
 //       ctc::string<32> s;

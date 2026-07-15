@@ -16,7 +16,7 @@ endif()
 
 project(ctc
   HOMEPAGE_URL "https://github.com/alexios-angel/compile-time-containers"
-  VERSION 0.1.0
+  VERSION 0.2.0
   LANGUAGES CXX)
 set(PROJECT_DESCRIPTION "Compile-time containers: constexpr strings, vectors and maps that stay structural.")
 
@@ -46,9 +46,18 @@ option(CTC_PCH "Precompile ctc.hpp for tests and examples" ON)
 
 set(CTC_HEADERS
 	include/ctc.hpp
+	include/ctc/array.hpp
+	include/ctc/deque.hpp
+	include/ctc/forward_list.hpp
+	include/ctc/list.hpp
 	include/ctc/map.hpp
 	include/ctc/pair.hpp
+	include/ctc/queue.hpp
+	include/ctc/set.hpp
+	include/ctc/stack.hpp
 	include/ctc/string.hpp
+	include/ctc/unordered_map.hpp
+	include/ctc/unordered_set.hpp
 	include/ctc/utility.hpp
 	include/ctc/vector.hpp)
 

@@ -1,7 +1,8 @@
 # ctc — compile-time containers
 
-Header-only C++20 library of fixed-capacity `constexpr` containers — **string,
-vector, map, pair** — that stay [**structural
+Header-only C++20 library of fixed-capacity `constexpr` containers — **every
+container in the C++20 standard library**, plus string and pair — that stay
+[**structural
 types**](https://en.cppreference.com/w/cpp/language/template_parameters), so a
 value you build at compile time can be a non-type template parameter, persist
 to runtime in static storage, or both:
@@ -40,12 +41,22 @@ constexpr) value. All operations are `constexpr`; the library is
 exception-free and warning-clean under `-pedantic -Wall -Wextra -Werror
 -Wconversion`.
 
-| Type | What it is |
-| --- | --- |
-| `ctc::basic_string<CharT, N>` | Fixed-capacity string of `CharT` code units, always null-terminated (`c_str()`). Aliases `string<N>`, `wstring<N>`, `u8string<N>`, `u16string<N>`, `u32string<N>`. |
-| `ctc::vector<T, N>` | Fixed-capacity vector — an `inplace_vector` that stays structural. `T` must be default-constructible. |
-| `ctc::map<K, V, N>` | Fixed-capacity map: unique keys, **insertion order preserved** (like a JSON object), linear heterogeneous lookup. |
-| `ctc::pair<F, S>` | A structural `std::pair` (aggregate, two public members). |
+Every C++20 standard container has a ctc counterpart:
+
+| std (C++20) | ctc | Notes |
+| --- | --- | --- |
+| `array` | `ctc::array<T, N>` | Aggregate, brace elision, CTAD. |
+| `vector` | `ctc::vector<T, N>` | An `inplace_vector` that stays structural. `T` must be default-constructible. |
+| `deque` | `ctc::deque<T, N>` | The whole vector API plus `push_front`/`pop_front`. Not a ring: the layout stays canonical (front ops are O(size) — irrelevant at compile-time sizes). |
+| `forward_list` | `ctc::forward_list<T, N>` | Index-linked nodes in a flat array; stable iterators, `insert_after`/`erase_after`. |
+| `list` | `ctc::list<T, N>` | Doubly index-linked; `insert`/`erase` anywhere, bidirectional iterators. |
+| `set` / `multiset` | `ctc::set` / `ctc::multiset<K, N, Compare>` | Sorted, binary-search lookups, transparent heterogeneous `Compare` (default `ctc::less`). |
+| `map` / `multimap` | `ctc::map` / `ctc::multimap<K, V, N, Compare>` | Sorted; `m[key] = v`, `insert_or_assign`, `try_emplace`, `equal_range`. |
+| `unordered_set` … `unordered_multimap` | `ctc::unordered_*<…, Hash, KeyEqual>` | Flat, linear `KeyEqual` scans — and iteration in **insertion order, guaranteed** (an `unordered_map` models a JSON object). `Hash` is accepted and ignored: at compile-time sizes a hash table buys nothing and would poison NTTP identity. |
+| `stack` / `queue` / `priority_queue` | `ctc::stack` / `queue` / `priority_queue<T, N, …>` | The underlying container is a public member `c` (public keeps the adaptor structural). `priority_queue` is a real binary heap. |
+| `span` | *use `std::span`* | Already fully constexpr in C++20. |
+| *(strings library)* `basic_string` | `ctc::basic_string<CharT, N>` | Code-unit storage, always null-terminated (`c_str()`); aliases `string<N>`, `wstring<N>`, `u8string<N>`, `u16string<N>`, `u32string<N>`. |
+| *(utility)* `pair` | `ctc::pair<F, S>` | A structural `std::pair` (aggregate, two public members) — `std::pair` is not guaranteed structural. |
 
 API highlights:
 
@@ -62,10 +73,19 @@ API highlights:
   `clear`, `operator[]`/`at`/`front`/`back`/`data`, iterators, element-wise
   `==` across capacities. Elements can be aggregates, `ctc::pair`s, strings,
   other vectors…
-- `map`: `m[key] = value` inserts like `std::map`; `find`/`contains`/`at`
-  accept **any key type comparable with `==`** (a `std::string_view` against
-  `ctc::string` keys, for instance); `insert`/`insert_or_assign`/`erase`
-  (order-preserving); iteration yields `ctc::pair<K, V> &` in insertion order.
+- sorted associative (`set`/`map`/`multi*`): lookups are **heterogeneous
+  through the transparent comparator** — a `std::string_view` or a string
+  literal finds a `ctc::string` key. Comparators must be stateless (they are
+  constructed on use, never stored, so they never appear in the NTTP).
+  Because a sorted-unique layout is canonical, two equal `set`s/`map`s are
+  the *same template argument* regardless of insertion order.
+- unordered associative: the same heterogeneous lookups via `KeyEqual`;
+  iteration order is insertion order, guaranteed — `unordered_map` is the
+  JSON-object container the sibling parsers need.
+- `forward_list`/`list` are the one exception to layout canonicality: node
+  placement depends on operation history, so equal contents guarantee only
+  `==`, not NTTP identity — `shrunk<V>()`/`with_capacity()` rebuilds a list
+  compactly and canonically when identity matters.
 
 ## Oversize, then right-size
 
