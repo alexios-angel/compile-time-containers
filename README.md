@@ -82,9 +82,9 @@ API highlights:
   Because a sorted-unique layout is canonical, two equal `set`s/`map`s are
   the *same template argument* regardless of insertion order.
 
-- unordered associative: the same heterogeneous lookups via `KeyEqual`;
-  iteration order is insertion order, guaranteed — `unordered_map` is the
-  JSON-object container the sibling parsers need.
+- unordered associative:
+  - the same heterogeneous lookups via `KeyEqual`
+  - iteration order is insertion order, guaranteed — `unordered_map` is the JSON-object container the sibling parsers need.
 
 - `forward_list`/`list` are the one exception to layout canonicality: node
   placement depends on operation history, so equal contents guarantee only
