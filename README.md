@@ -69,19 +69,23 @@ API highlights:
   `ctc::basic_string{"hi"}` is a `ctc::string<2>` (or `ctc::make_string("hi")`;
   alias-template deduction needs clang ≥ 19). Unlike `ctll::fixed_string`
   (which decodes to UTF-32 code points), the content is stored as written.
+
 - `vector`: `push_back`/`emplace_back`/`pop_back`/`insert`/`erase`/`resize`/
   `clear`, `operator[]`/`at`/`front`/`back`/`data`, iterators, element-wise
   `==` across capacities. Elements can be aggregates, `ctc::pair`s, strings,
   other vectors…
+
 - sorted associative (`set`/`map`/`multi*`): lookups are **heterogeneous
   through the transparent comparator** — a `std::string_view` or a string
   literal finds a `ctc::string` key. Comparators must be stateless (they are
   constructed on use, never stored, so they never appear in the NTTP).
   Because a sorted-unique layout is canonical, two equal `set`s/`map`s are
   the *same template argument* regardless of insertion order.
+
 - unordered associative: the same heterogeneous lookups via `KeyEqual`;
   iteration order is insertion order, guaranteed — `unordered_map` is the
   JSON-object container the sibling parsers need.
+
 - `forward_list`/`list` are the one exception to layout canonicality: node
   placement depends on operation history, so equal contents guarantee only
   `==`, not NTTP identity — `shrunk<V>()`/`with_capacity()` rebuilds a list
@@ -118,6 +122,7 @@ guarantees make NTTP identity behave:
   (`pop_back`, `erase`, `clear`, `resize` reset vacated slots), so **equal
   contents mean equivalent template arguments** no matter how the value was
   built;
+
 - `ctc::pair` exists because `std::pair` is not guaranteed structural.
 
 The price: `vector<T, N>` requires a default-constructible `T` (the whole
