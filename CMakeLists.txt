@@ -47,6 +47,7 @@ option(CTC_PCH "Precompile ctc.hpp for tests and examples" ON)
 set(CTC_HEADERS
 	include/ctc.hpp
 	include/ctc/array.hpp
+	include/ctc/cfunction.hpp
 	include/ctc/deque.hpp
 	include/ctc/forward_list.hpp
 	include/ctc/list.hpp

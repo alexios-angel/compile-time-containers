@@ -2,6 +2,7 @@
 #define CTC__HPP
 
 #include "ctc/utility.hpp"
+#include "ctc/cfunction.hpp"
 #include "ctc/pair.hpp"
 #include "ctc/string.hpp"
 #include "ctc/array.hpp"
